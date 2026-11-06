@@ -63,6 +63,10 @@ def test_preview_run_idempotence_history_access_and_snapshot(app):
         assert scheduler.get('/api/runs').json()['total']==1
         assert manager.post('/api/rules',json=rule_body()).status_code==409
         assert manager.get('/api/runs/'+run['id']).json()['rules']['max_duty_hours']==12
+        assert manager.post('/api/rules',json=rule_body(2)).status_code==200
+        assert manager.get('/api/runs/'+run['id']).json()==run
+        historical=next(r for r in manager.get('/api/runs').json()['items'] if r['id']==run['id'])
+        assert historical['rules']==run['rules']
 
 def test_bad_uploads_and_no_partial_history(app):
     with TestClient(app) as c:
