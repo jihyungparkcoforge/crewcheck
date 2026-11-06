@@ -35,7 +35,12 @@ test('isolated visitor workspaces, roles, seeded history, uploads and immutable 
  const old=await a.request('/api/uploads/'+upload.json.id+'/check','POST');assert.equal(old.status,200);assert.equal(old.json.summary.findings,3);assert.equal(old.json.rules.version,1);
  const again=await a.request('/api/uploads/'+upload.json.id+'/check','POST');assert.equal(again.json.id,old.json.id);
  const fresh=await a.upload('sample_roster','xlsx');assert.equal(fresh.status,201);const next=await a.request('/api/uploads/'+fresh.json.id+'/check','POST');assert.equal(next.json.summary.findings,1);
- const events=await a.request('/api/audit');assert.equal(events.status,200);assert.equal(events.json.items.filter(e=>e.action==='rules.version_created').length,1);assert.equal(events.json.items.filter(e=>e.action==='roster.checked').length,2);
+ assert.equal(next.json.rules.version,2);
+ const snapshot=JSON.parse(JSON.stringify(old.json));
+ const v3=await a.request('/api/rules','POST',{...change,expected_version:2,max_duty_hours:18,reason:'Third version must not rewrite saved checks'});assert.equal(v3.status,200);
+ const reopened=await a.request('/api/runs/'+old.json.id);assert.deepEqual(reopened.json,snapshot);
+ const historical=(await a.request('/api/runs')).json.items.find(r=>r.id===old.json.id);assert.deepEqual(historical.rules,snapshot.rules);
+ const events=await a.request('/api/audit');assert.equal(events.status,200);assert.equal(events.json.items.filter(e=>e.action==='rules.version_created').length,2);assert.equal(events.json.items.filter(e=>e.action==='roster.checked').length,2);
  await a.request('/api/auth/logout','POST');assert.equal((await a.request('/api/runs')).status,401);await a.login('scheduler');assert.equal((await a.request('/api/runs/'+next.json.id)).status,404);assert.equal((await a.request('/api/runs/'+old.json.id)).status,200);
  db.close();
 });

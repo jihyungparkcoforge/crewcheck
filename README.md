@@ -14,12 +14,17 @@ The web demo stores records and audit events in SQLite-based Cloudflare D1. Post
 
 A working local MVP for reviewing synthetic crew rosters. Upload **CSV or Excel (.xlsx)**, review deterministic findings, revisit saved checks, and configure versioned demo thresholds. **PDF, DOCX, legacy .xls and macros are outside scope.**
 
+## Applied rules in check history
+
+Each upload pins its rule version. Check history shows that version, its name and duty/rest thresholds. Open a check to see the **Applied rule set** card with the saved thresholds and certification basis; expand **Rule version details** for the creator, creation time and reason. Later rule changes never recalculate or overwrite an existing check. Upload the roster again to assess it under a newer version.
+
 ## Start the local reference
 
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
 
 ```sh
-cd /Users/jpark/Documents/09_coforge/projects/compliance_checker
+git clone https://github.com/jihyungparkcoforge/crewcheck.git
+cd crewcheck
 ./scripts/run.sh
 ```
 
